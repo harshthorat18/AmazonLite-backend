@@ -16,42 +16,58 @@ const connectDB = require('./database/connection');
 const router = require('./routes/router');
 
 // Middleware
-app.use(morgan('dev')); 
-app.use(express.json()); 
-app.use(cookieParser()); 
+app.use(morgan('dev'));
+app.use(express.json());
+app.use(cookieParser());
 
-// --- CRITICAL CHANGE FOR CORS ORIGIN ---
+// --- ADVANCED DEBUGGING FOR CORS ORIGIN (KEEP THESE LINES!) ---
+const LOCAL_FRONTEND_URL = 'http://localhost:3000';
+const DEPLOYED_FRONTEND_URL = process.env.FRONTEND_URL; // This is the value from Render's dashboard
+
+console.log(`DEBUG: Initial PORT: "${port}"`);
+console.log(`DEBUG: process.env.NODE_ENV: "${process.env.NODE_ENV}"`);
+console.log(`DEBUG: LOCAL_FRONTEND_URL (hardcoded): "${LOCAL_FRONTEND_URL}"`);
+console.log(`DEBUG: DEPLOYED_FRONTEND_URL (from process.env): "${DEPLOYED_FRONTEND_URL}"`); // *** THIS LINE IS CRUCIAL ***
+
 const allowedOrigins = [
-    'http://localhost:3000', // For local frontend development
-    process.env.FRONTEND_URL // For deployed frontend
+    LOCAL_FRONTEND_URL, // For local frontend development
+    DEPLOYED_FRONTEND_URL // For deployed frontend
 ];
 
+// Filter out any undefined, null, or empty string values from allowedOrigins
+const cleanedAllowedOrigins = allowedOrigins.filter(url => typeof url === 'string' && url.length > 0);
+
+console.log(`DEBUG: allowedOrigins array (before clean): ${JSON.stringify(allowedOrigins)}`);
+console.log(`DEBUG: cleanedAllowedOrigins array (after filter): ${JSON.stringify(cleanedAllowedOrigins)}`); // *** THIS LINE IS CRUCIAL ***
 
 app.use(cors({
     credentials: true,
     origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
-        // or if the origin is in our allowed list
-        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        // If the array is empty, it means DEPLOYED_FRONTEND_URL was not set correctly
+        if (cleanedAllowedOrigins.length === 0) {
+            console.error('CRITICAL CORS ERROR: No valid origins configured. DEPLOYED_FRONTEND_URL might be missing or invalid.');
+            return callback(new Error('CORS configuration error: No valid origins.'));
+        }
+
+        if (!origin || cleanedAllowedOrigins.includes(origin)) {
+            console.log(`CORS ALLOWED: Origin "${origin}"`);
             callback(null, true);
         } else {
-            // Log the problematic origin for debugging
-            console.error(`CORS blocked request from unknown origin: ${origin}`);
-            callback(new Error('Not allowed by CORS'));
+            console.error(`CORS BLOCKED: Request from unknown origin: "${origin}"`);
+            console.error(`CORS BLOCKED: Allowed origins were: ${JSON.stringify(cleanedAllowedOrigins)}`);
+            callback(new Error(`Not allowed by CORS: ${origin}`));
         }
     }
 }));
-// --- END CRITICAL CHANGE ---
+// --- END ADVANCED DEBUGGING ---
 
-app.use('/api', router); 
+app.use('/api', router);
+
 // DB Connect
 connectDB();
 
 if (process.env.NODE_ENV === 'production') {
-    
     app.use(express.static('client/build'));
-
-   
     app.get("*", (req, res) => {
         res.sendFile(path.resolve(__dirname, "client/build", "index.html"));
     });
@@ -59,5 +75,5 @@ if (process.env.NODE_ENV === 'production') {
 
 // Start server
 app.listen(port, () => {
-    console.log("✅ Server started at port " + port);
+    console.log("Server started at port " + port);
 });
