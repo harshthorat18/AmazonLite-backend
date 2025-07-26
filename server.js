@@ -41,10 +41,10 @@ if (!corsOrigin || typeof corsOrigin !== 'string' || corsOrigin.length === 0) {
     process.exit(1);
 }
 
-app.use(cors({
-    credentials: true,
-    origin: corsOrigin // Pass the determined origin directly
-}));
+//app.use(cors({
+ //   credentials: true,
+  //  origin: corsOrigin // Pass the determined origin directly
+//}));
 // --- END MODIFIED CORS LOGIC ---
 
 app.use('/api', router);
