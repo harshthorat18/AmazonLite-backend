@@ -199,65 +199,6 @@ router.post('/addtocart/:id', authenticate, async (req, res) => {
 
 
 
-// backend/routes/orderRoutes.js (or wherever you defined this route)
-
-router.post("/create-order", async (req, res) => {
-  try {
-    const { amount } = req.body;
-    console.log("Received amount:", amount);
-
-    if (!amount || isNaN(amount)) {
-      return res.status(400).json({ message: "Amount is required and must be a number" });
-    }
-
-    const options = {
-      amount: Math.round(amount), // in paise
-      currency: "INR",
-      receipt: `receipt_order_${Math.random() * 1000}`,
-    };
-
-    const order = await razorpayInstance.orders.create(options);
-    res.status(200).json({ order });
-
-  } catch (err) {
-    console.error("Razorpay Order Error:", err);
-    res.status(500).json({ message: "Payment order creation failed." });
-  }
-});
-
-
-
-
-
-
-router.post("/create-order", async (req, res) => {
-  const { amount } = req.body;
-  console.log("Incoming Razorpay amount:", amount); // ⬅️ Log to confirm
-
-  if (!amount || isNaN(amount)) {
-    return res.status(400).json({ message: "Amount is required and must be a number" });
-  }
-
-  try {
-    const razorpay = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_SECRET,
-    });
-
-    const order = await razorpay.orders.create({
-      amount: Math.round(amount), // must be integer paise
-      currency: "INR",
-      receipt: `receipt_order_${Date.now()}`
-    });
-
-    res.status(201).json({ order });
-  } catch (error) {
-    console.error("Error creating Razorpay order:", error);
-    res.status(500).json({ message: "Server error creating order" });
-  }
-});
-
-
 
 
 
