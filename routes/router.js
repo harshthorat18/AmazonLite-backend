@@ -6,13 +6,11 @@ const jwt = require('jsonwebtoken');
 const { check, validationResult } = require('express-validator');
 const authenticate = require('../middleware/authenticate');
 const Product = require('../models/product'); // Adjust path as needed
-const User = require('../models/User');       // Adjust path as needed
+const User = require('../models/User');     // Adjust path as needed
 
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key";
 
-// ===================== CONTROLLERS =====================
-//const { getProductById, getAllProducts } = require("../controllers/productController");
 // ===================== PRODUCTS =====================
 
 // ✅ Get all products
@@ -21,11 +19,10 @@ router.get('/products', async (req, res) => {
     const products = await Product.find(); // Fetch from DB
     res.json(products);
   } catch (err) {
+    console.error('Error fetching all products:', err); // Added error logging
     res.status(500).json({ error: 'Failed to fetch products' });
   }
 });
-
-module.exports = router;
 
 // ✅ Get individual product by ID
 router.get('/products/:id', async (req, res) => {
@@ -136,9 +133,9 @@ router.post('/login', [
 
     res.cookie("AmazonClone", token, {
        httpOnly: true,
-  secure: false,           // Set to true if using HTTPS
-  sameSite: "Lax",         // Use "None" if frontend is on different domain + HTTPS
-  maxAge: 24 * 60 * 60 * 1000 // 1 day
+       secure: false,         // Set to true if using HTTPS
+       sameSite: "Lax",       // Use "None" if frontend is on different domain + HTTPS
+       maxAge: 24 * 60 * 60 * 1000 // 1 day
     });
 
     return res.status(201).json({
@@ -161,7 +158,7 @@ router.post('/login', [
 router.post('/addtocart/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
-    const productInfo = await Product.findById(id); // ✅ Fix here
+    const productInfo = await Product.findById(id);
     const userInfo = await User.findById(req.userId);
 
     if (!productInfo) {
@@ -192,16 +189,15 @@ router.post('/addtocart/:id', authenticate, async (req, res) => {
     }
 
   } catch (error) {
-    console.error(error);
+    console.error(error); // Added error logging
     res.status(500).json({ status: false, message: "Server error" });
   }
 });
 
 
-
-
-
-
+// Note: The getSingleProduct function below is not a route itself.
+// If it was intended to be a route, it needs to be wrapped in router.get() or similar.
+// For now, it's just a standalone function.
 const getSingleProduct = async (req, res) => {
   const product = await Product.findById(req.params.id);
   if (!product) {
@@ -209,9 +205,6 @@ const getSingleProduct = async (req, res) => {
   }
   res.status(200).json(product);
 };
-
-
-
 
 
 // ===================== DELETE ITEM FROM CART =====================
@@ -227,30 +220,45 @@ router.delete("/delete/:id", authenticate, async (req, res) => {
     res.status(201).json({ status: true, message: "Item deleted successfully" });
 
   } catch (error) {
+    console.error(error); // Added error logging
     res.status(400).json({ status: false, message: error.message });
   }
 });
 
-// ===================== LOGOUT =====================
+// ===================== LOGOUT (First instance) =====================
 
 router.get("/logout", authenticate, async (req, res) => {
   try {
-    req.rootUser.tokens = req.rootUser.tokens.filter(t => t.token !== req.token);
+    // Check if req.rootUser exists and has a tokens array before filtering
+    if (req.rootUser && req.rootUser.tokens) {
+      req.rootUser.tokens = req.rootUser.tokens.filter(t => t.token !== req.token);
+      await req.rootUser.save();
+    } else {
+        console.warn("req.rootUser or req.rootUser.tokens not found during logout. User might not be fully authenticated or session is already cleared.");
+    }
 
     res.clearCookie("AmazonClone");
-    await req.rootUser.save();
-
     res.status(201).json({ status: true, message: "Logged out successfully!" });
   } catch (error) {
+    console.error(error); // Added error logging
     res.status(400).json({ status: false, message: error.message });
   }
 });
+
 
 // ===================== GET AUTH USER =====================
 
 router.get('/getAuthUser', authenticate, async (req, res) => {
-  const userData = await User.findById(req.userId);
-  res.send(userData);
+  try {
+    const userData = await User.findById(req.userId);
+    if (!userData) {
+        return res.status(404).json({ status: false, message: "User not found" });
+    }
+    res.send(userData);
+  } catch (err) {
+    console.error(err); // Added error logging
+    res.status(500).json({ status: false, message: "Server error" });
+  }
 });
 
 // ===================== RAZORPAY =====================
@@ -273,6 +281,7 @@ router.post("/create-order", authenticate, async (req, res) => {
 
     res.status(200).json({ order });
   } catch (error) {
+    console.error(error); // Added error logging
     res.status(400).json(error);
   }
 });
@@ -302,6 +311,7 @@ router.post("/pay-order", authenticate, async (req, res) => {
     }
 
   } catch (error) {
+    console.error(error); // Added error logging
     res.status(400).json(error);
   }
 });
@@ -318,20 +328,22 @@ router.get('/validuser', authenticate, async (req, res) => {
 
     return res.status(200).json({ status: true, user: validUser });
   } catch (err) {
-    console.error(err);
+    console.error(err); // Added error logging
     return res.status(500).json({ status: false, message: "Server error" });
   }
 });
 
 
-// Logout Route
+// ===================== LOGOUT (Second instance - consider removing one) =====================
+.
 router.get('/logout', (req, res) => {
   res.clearCookie("AmazonClone", {
     httpOnly: true,
-    secure: false,     // Set to true in production (if using HTTPS)
-    sameSite: "Lax"    // Use 'None' with HTTPS and cross-domain
+    secure: false,     
+    sameSite: "Lax"     
   });
   return res.status(200).json({ status: true, message: "Logout successful" });
 });
 
+// Export the router AFTER all routes have been defined
 module.exports = router;
