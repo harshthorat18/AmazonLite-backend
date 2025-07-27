@@ -335,11 +335,11 @@ router.get('/validuser', authenticate, async (req, res) => {
 
 
 // ===================== LOGOUT (Second instance - consider removing one) =====================
-.
+// REMOVED THE STRAY '.' HERE
 router.get('/logout', (req, res) => {
   res.clearCookie("AmazonClone", {
     httpOnly: true,
-    secure: false,     
+    secure: false,      
     sameSite: "Lax"     
   });
   return res.status(200).json({ status: true, message: "Logout successful" });
