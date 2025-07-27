@@ -53,12 +53,12 @@ app.use('/api', router);
 // DB Connect
 connectDB();
 
-if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, 'client/build'))); // Use path.join for better path handling
-    app.get("*", (req, res) => {
-        res.sendFile(path.resolve(__dirname, "client/build", "index.html"));
-    });
-}
+// if (process.env.NODE_ENV === 'production') {
+//     app.use(express.static(path.join(__dirname, 'client/build'))); // Use path.join for better path handling
+//     app.get("*", (req, res) => {
+//         res.sendFile(path.resolve(__dirname, "client/build", "index.html"));
+//     });
+// }
 
 // Start server
 app.listen(port, () => {
