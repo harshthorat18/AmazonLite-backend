@@ -1,7 +1,7 @@
-// my server.js // Libraries
+// Libraries
 require('dotenv').config(); // Ensure this is at the very top
 const express = require('express');
-const cors = require('cors');
+const cors = require('cors'); // Make sure cors is imported
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const path = require('path');
@@ -41,10 +41,11 @@ if (!corsOrigin || typeof corsOrigin !== 'string' || corsOrigin.length === 0) {
     process.exit(1);
 }
 
-//app.use(cors({
- //   credentials: true,
-  //  origin: corsOrigin // Pass the determined origin directly
-//}));
+// --- UNCOMMENTED CORS MIDDLEWARE ---
+app.use(cors({
+    credentials: true,
+    origin: corsOrigin // Pass the determined origin directly
+}));
 // --- END MODIFIED CORS LOGIC ---
 
 app.use('/api', router);
@@ -53,7 +54,7 @@ app.use('/api', router);
 connectDB();
 
 if (process.env.NODE_ENV === 'production') {
-    app.use(express.static('client/build'));
+    app.use(express.static(path.join(__dirname, 'client/build'))); // Use path.join for better path handling
     app.get("*", (req, res) => {
         res.sendFile(path.resolve(__dirname, "client/build", "index.html"));
     });
