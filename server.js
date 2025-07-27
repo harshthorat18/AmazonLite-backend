@@ -1,7 +1,7 @@
-// Libraries
-require('dotenv').config(); // Ensure this is at the very top
+require('dotenv').config(); // Load .env at the top
+
 const express = require('express');
-const cors = require('cors'); // Make sure cors is imported
+const cors = require('cors');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const path = require('path');
@@ -20,47 +20,34 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(cookieParser());
 
-// --- MODIFIED CORS ORIGIN LOGIC ---
-let corsOrigin;
+// ✅ Allow multiple Vercel frontend URLs (static + preview builds)
+const allowedOrigins = [
+  "https://amazonlite-frontend.vercel.app",
+  "https://amazonlite-frontend-git-main-harshthorat18s-projects.vercel.app",
+  "https://amazonlite-frontend-67yick3p4-harshthorat18s-projects.vercel.app",
+];
 
-// Set CORS origin based on environment
-if (process.env.NODE_ENV === 'production') {
-    // In production, use only the deployed frontend URL
-    corsOrigin = process.env.FRONTEND_URL;
-    console.log(`DEBUG: Production CORS Origin: "${corsOrigin}"`);
-} else {
-    // In development, use localhost
-    corsOrigin = 'http://localhost:3000';
-    console.log(`DEBUG: Development CORS Origin: "${corsOrigin}"`);
-}
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn("Blocked CORS origin:", origin);
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+};
 
-// Add a check to ensure corsOrigin is a valid string
-if (!corsOrigin || typeof corsOrigin !== 'string' || corsOrigin.length === 0) {
-    console.error('CRITICAL ERROR: CORS origin is not defined or is invalid!');
-    // This will stop the app if origin is invalid. Helps to debug.
-    process.exit(1);
-}
+app.use(cors(corsOptions));
 
-// --- UNCOMMENTED CORS MIDDLEWARE ---
-app.use(cors({
-    credentials: true,
-    origin: corsOrigin // Pass the determined origin directly
-}));
-// --- END MODIFIED CORS LOGIC ---
-
+// API Routes
 app.use('/api', router);
 
-// DB Connect
+// Connect MongoDB
 connectDB();
-
-// if (process.env.NODE_ENV === 'production') {
-//     app.use(express.static(path.join(__dirname, 'client/build'))); // Use path.join for better path handling
-//     app.get("*", (req, res) => {
-//         res.sendFile(path.resolve(__dirname, "client/build", "index.html"));
-//     });
-// }
 
 // Start server
 app.listen(port, () => {
-    console.log(" Server started at port " + port);
+  console.log(`Server started at port ${port}`);
 });
