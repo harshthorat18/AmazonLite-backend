@@ -359,7 +359,7 @@ router.get('/seed', async (req, res) => {
   }
 });
 
-module.exports = router;
+
 
 // Export the router AFTER all routes have been defined
 module.exports = router;
