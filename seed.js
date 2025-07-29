@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 dotenv.config();
 
-const Product = require('./database/product');
+const Product = require('./database/products');
 const products = require('./products');
 
 // Connect to MongoDB Atlas
