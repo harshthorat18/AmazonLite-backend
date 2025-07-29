@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const Product = require('./database/products');
-const products = require('./products');
+const products = require('./productData');
 
 // Connect to MongoDB Atlas
 mongoose.connect(process.env.MONGO_URI)
