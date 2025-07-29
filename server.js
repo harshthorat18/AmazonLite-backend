@@ -46,7 +46,7 @@ app.use(cors(corsOptions));
 
 // API Routes
 app.use('/api', router);
-app.use('/api', seedRoute);
+
 
 // Connect MongoDB
 connectDB();
