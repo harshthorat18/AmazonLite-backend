@@ -7,7 +7,7 @@ const { check, validationResult } = require('express-validator');
 const authenticate = require('../middleware/authenticate');
 const Product = require('../models/product'); // Adjust path as needed
 const User = require('../models/User');     // Adjust path as needed
-const productData = require('../data/product');
+const productData = require('../database/product');
 
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key";
