@@ -5,6 +5,8 @@ const cors = require('cors');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const path = require('path');
+const seedRoute = require('./seedRoute');
+
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -43,6 +45,7 @@ app.use(cors(corsOptions));
 
 // API Routes
 app.use('/api', router);
+app.use('/api', seedRoute);
 
 // Connect MongoDB
 connectDB();
