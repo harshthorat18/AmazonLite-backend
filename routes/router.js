@@ -345,5 +345,23 @@ router.get('/logout', (req, res) => {
   return res.status(200).json({ status: true, message: "Logout successful" });
 });
 
+//=============================================================
+const express = require('express');
+const router = express.Router();
+const Product = require('../models/productModel');
+const productData = require('../productData');
+
+router.get('/seed', async (req, res) => {
+  try {
+    await Product.deleteMany(); // Optional: clear existing
+    await Product.insertMany(productData);
+    res.send({ message: 'Seeding done!' });
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+});
+
+module.exports = router;
+
 // Export the router AFTER all routes have been defined
 module.exports = router;
