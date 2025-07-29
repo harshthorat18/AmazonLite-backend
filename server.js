@@ -5,6 +5,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const path = require('path');
+const seedRoute = require('./seed');
 
 
 
