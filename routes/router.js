@@ -7,6 +7,7 @@ const { check, validationResult } = require('express-validator');
 const authenticate = require('../middleware/authenticate');
 const Product = require('../models/product'); // Adjust path as needed
 const User = require('../models/User');     // Adjust path as needed
+const productData = require('../productData');
 
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key";
@@ -346,10 +347,7 @@ router.get('/logout', (req, res) => {
 });
 
 //=============================================================
-const express = require('express');
-const router = express.Router();
-const Product = require('../models/productModel');
-const productData = require('../productData');
+
 
 router.get('/seed', async (req, res) => {
   try {
